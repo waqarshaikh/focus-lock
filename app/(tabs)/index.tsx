@@ -1,8 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function HomeScreen() {
   const [isFocusing, setIsFocusing] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const timerRef = useRef<number | null>(null);
+
+  // Start or stop the timer
+  const toggleFocus = () => {
+    if (isFocusing) {
+      clearInterval(timerRef.current!);
+      timerRef.current = null;
+    } else {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    setIsFocusing(!isFocusing);
+  };
+
+  // Stop timer when reaching 0
+  useEffect(() => {
+    if (timeLeft === 0 && timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+      setIsFocusing(false);
+    }
+  }, [timeLeft]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  // Format time (MM:SS)
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   return (
     <View style={styles.container}>
@@ -11,9 +51,13 @@ export default function HomeScreen() {
         {isFocusing ? "Stay focused..." : "Ready to start your session?"}
       </Text>
 
+      {/* Timer display */}
+      <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
+
+      {/* Start/Stop button */}
       <TouchableOpacity
         style={[styles.button, isFocusing ? styles.stopButton : styles.startButton]}
-        onPress={() => setIsFocusing(!isFocusing)}
+        onPress={toggleFocus}
       >
         <Text style={styles.buttonText}>
           {isFocusing ? "Stop" : "Start Focus"}
@@ -39,7 +83,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 30,
+    marginBottom: 20,
+  },
+  timer: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 40,
   },
   button: {
     paddingVertical: 15,
