@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 export function useFocusTimer(initialMinutes: number = 25) {
     const [isFocusing, setIsFocusing] = useState(false);
     const [timeLeft, setTimeLeft] = useState(initialMinutes * 60);
-    const timerRef = useRef<number | null>(null);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Start or stop the timer
     const toggleFocus = () => {
