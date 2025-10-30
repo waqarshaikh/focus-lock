@@ -1,11 +1,24 @@
-import { Text, View, Button, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 export default function HomeScreen() {
+  const [isFocusing, setIsFocusing] = useState(false);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>FocusLock</Text>
-      <Text style={styles.subtitle}>Start your focus session</Text>
-      <Button title="Start Focus Session" onPress={() => alert('Focus session started!')} />
+      <Text style={styles.title}>🎯 FocusLock</Text>
+      <Text style={styles.subtitle}>
+        {isFocusing ? "Stay focused..." : "Ready to start your session?"}
+      </Text>
+
+      <TouchableOpacity
+        style={[styles.button, isFocusing ? styles.stopButton : styles.startButton]}
+        onPress={() => setIsFocusing(!isFocusing)}
+      >
+        <Text style={styles.buttonText}>
+          {isFocusing ? "Stop" : "Start Focus"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -13,18 +26,35 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#555',
-    marginBottom: 16,
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 30,
+  },
+  button: {
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 30,
+  },
+  startButton: {
+    backgroundColor: '#2e86de',
+  },
+  stopButton: {
+    backgroundColor: '#d63031',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
