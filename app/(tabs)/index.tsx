@@ -1,40 +1,50 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, BackHandler } from 'react-native';
 import { useFocusTimer } from '../../hooks/use-focus-timer';
 
 export default function HomeScreen() {
-  const { timeLeft, isFocusing, toggleFocus, resetTimer } = useFocusTimer();
+  const { timeLeft, isFocusing, toggleFocus } = useFocusTimer();
 
+  // Format seconds as MM:SS
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
     const s = (seconds % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
 
+  // Disable Android back button while focusing
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (isFocusing) return true; // prevent going back
+      return false;
+    });
+
+    return () => backHandler.remove();
+  }, [isFocusing]);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🎯 FocusLock</Text>
-      <Text style={styles.subtitle}>
-        {isFocusing ? 'Stay focused...' : 'Ready to start your session?'}
-      </Text>
+      {isFocusing ? (
+        // FULL LOCK MODE
+        <View style={styles.lockOverlay}>
+          <Text style={styles.lockText}>🔒 Lock Mode Active</Text>
+          <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
+        </View>
+      ) : (
+        // NORMAL HOME SCREEN
+        <>
+          <Text style={styles.title}>🎯 FocusLock</Text>
+          <Text style={styles.subtitle}>Ready to start your session?</Text>
 
-      <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
+          <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
 
-      {/* Start / Stop button */}
-      <TouchableOpacity
-        style={[styles.button, isFocusing ? styles.stopButton : styles.startButton]}
-        onPress={toggleFocus}
-      >
-        <Text style={styles.buttonText}>
-          {isFocusing ? 'Stop' : 'Start Focus'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Reset button — only visible while focusing */}
-      {isFocusing && (
-        <TouchableOpacity style={styles.resetButton} onPress={resetTimer}>
-          <Text style={styles.buttonText}>Reset</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.button, styles.startButton]}
+            onPress={toggleFocus}
+          >
+            <Text style={styles.buttonText}>Start Focus</Text>
+          </TouchableOpacity>
+        </>
       )}
     </View>
   );
@@ -72,19 +82,22 @@ const styles = StyleSheet.create({
   startButton: {
     backgroundColor: '#2e86de',
   },
-  stopButton: {
-    backgroundColor: '#d63031',
-  },
-  resetButton: {
-    backgroundColor: '#636e72',
-    marginTop: 20,
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-  },
   buttonText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 16,
+  },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  lockText: {
+    color: '#fff',
+    fontSize: 24,
+    marginBottom: 20,
+    fontWeight: 'bold',
   },
 });
